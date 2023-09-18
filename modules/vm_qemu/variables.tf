@@ -58,7 +58,7 @@ variable "vms" {
     package_upgrade     = optional(bool, false)
     packages            = optional(list(string), [])
     runcmd              = list(string)
-    target_node         = optional(string, "pve")
+    target_node         = optional(string, "pve0")
     clone               = string
     full_clone          = optional(bool, true)
     qemu_os             = optional(string, "l26")
