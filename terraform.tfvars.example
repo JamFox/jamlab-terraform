@@ -1,0 +1,17 @@
+pm_api_url               = "https://10.1.2.3:8006/api2/json"
+pm_api_token_id          = "terraform@pve!terraform-token"
+pm_api_token_secret      = "b027a79e-db28-47cc-8ed4-1f89993678d3"
+pm_tls_insecure          = true
+pm_log_enable            = false
+pm_log_file              = "terraform-plugin-proxmox.log"
+pm_debug                 = true
+pm_log_levels_default    = "debug"
+pm_log_levels_capturelog = ""
+
+# PVE Cluster Host Connection
+# To SCP cloud init template renders
+connection_type             = "ssh"
+connection_user             = "root"
+connection_private_key_path = "~/.ssh/id_mykey"
+connection_host             = "10.1.2.3"
+#provisioner_directory_path  = "/var/lib/vz/snippets"

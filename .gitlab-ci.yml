@@ -1,0 +1,68 @@
+include:
+  - project: 'hpc-internal/gitlab-ci-templates'
+    ref: 'master'
+    file: 'terraform/terraform_base-ci.yml'
+
+variables:
+  PM_API_URL: 'https://$CONNECTION_HOST:8006/api2/json'
+  PM_TLS_INSECURE: 'true'
+  PM_LOG_ENABLE: 'false'
+  PM_LOG_FILE: 'terraform-proxmox.log'
+  PM_DEBUG: 'true'
+  PM_LOG_LEVELS_DEFAULT: 'debug'
+  PM_CONNECTION_TYPE: 'ssh'
+  PM_CONNECTION_USER: 'root'
+  PM_CONNECTION_PRIVATE_KEY_PATH: ".ssh/id"
+  PM_CONNECTION_HOST: '$CONNECTION_HOST'
+  TF_ROOT: ${CI_PROJECT_DIR}  # The relative path to the root directory of the Terraform project
+  TF_STATE_NAME: default      # The name of the state file used by the GitLab Managed Terraform state backend
+  TF_PLAN_ARGS: "-var pm_api_url=$PM_API_URL -var pm_api_token_id=$PM_API_TOKEN_ID -var pm_api_token_secret=$PM_API_TOKEN_SECRET -var pm_tls_insecure=$PM_TLS_INSECURE -var pm_log_enable=$PM_LOG_ENABLE -var pm_log_file=$PM_LOG_FILE -var pm_debug=$PM_DEBUG -var pm_log_levels_default=$PM_LOG_LEVELS_DEFAULT -var connection_type=$PM_CONNECTION_TYPE -var connection_user=$PM_CONNECTION_USER -var connection_private_key_path=$PM_CONNECTION_PRIVATE_KEY_PATH -var connection_host=$PM_CONNECTION_HOST"
+  TF_APPLY_ARGS: "-var pm_api_url=$PM_API_URL -var pm_api_token_id=$PM_API_TOKEN_ID -var pm_api_token_secret=$PM_API_TOKEN_SECRET -var pm_tls_insecure=$PM_TLS_INSECURE -var pm_log_enable=$PM_LOG_ENABLE -var pm_log_file=$PM_LOG_FILE -var pm_debug=$PM_DEBUG -var pm_log_levels_default=$PM_LOG_LEVELS_DEFAULT -var connection_type=$PM_CONNECTION_TYPE -var connection_user=$PM_CONNECTION_USER -var connection_private_key_path=$PM_CONNECTION_PRIVATE_KEY_PATH -var connection_host=$PM_CONNECTION_HOST"
+
+stages:
+  - validate
+  - test
+  - build
+  - deploy
+  - cleanup
+
+.ssh-before-script:
+  before_script:
+    ## Install ssh-agent if not already installed, it is required by Docker.
+    - 'command -v ssh-agent >/dev/null || apk add --update --no-cache openssh'
+    ## Run ssh-agent
+    - eval $(ssh-agent -s)
+    ## Create the SSH directory
+    - mkdir -p .ssh
+    - chmod 700 .ssh
+    ## Add the SSH key stored in SSH_PRIVATE_KEY file type CI/CD variable to the agent store
+    - touch "$PM_CONNECTION_PRIVATE_KEY_PATH"
+    - echo "$SSH_PRIVATE_KEY" > $PM_CONNECTION_PRIVATE_KEY_PATH
+    - chmod 600 $PM_CONNECTION_PRIVATE_KEY_PATH
+    - ssh-add $PM_CONNECTION_PRIVATE_KEY_PATH
+
+fmt:
+  extends: .terraform:fmt
+  needs: []
+
+validate:
+  extends: .terraform:validate
+  needs: []
+
+build:
+  extends: 
+    - .ssh-before-script
+    - .terraform:build
+  environment:
+    name: $TF_STATE_NAME
+    action: prepare
+
+deploy:
+  extends: 
+    - .ssh-before-script
+    - .terraform:deploy
+  dependencies:
+    - build
+  environment:
+    name: $TF_STATE_NAME
+    action: start
