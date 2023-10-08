@@ -1,0 +1,17 @@
+#cloud-config
+hostname: vs2
+manage_etc_hosts: true
+fqdn: vs2.jamfox.dev
+timezone: Europe/London
+users:
+  - name: ubuntu
+    ssh-authorized-keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILayJ7ZP6Z6IDms4ujnz9nRnAJEIXwyto1SbSwfzjqst jamfox
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    groups: sudo
+    shell: /bin/bash
+package_upgrade: false
+
+runcmd:
+  - sudo apt update && sudo apt upgrade -y
+  - sudo /usr/sbin/reboot
