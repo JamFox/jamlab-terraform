@@ -42,12 +42,14 @@ resource "proxmox_vm_qemu" "vms" {
 
   target_node = each.value.target_node
   #vmid        = each.value.vmid
-  name       = each.key
-  clone      = each.value.clone
-  full_clone = each.value.full_clone
-  qemu_os    = each.value.qemu_os
-  pool       = each.value.pool
-  desc       = each.value.desc
+  name         = each.key
+  nameserver   = each.value.nameserver
+  searchdomain = each.value.searchdomain
+  clone        = each.value.clone
+  full_clone   = each.value.full_clone
+  qemu_os      = each.value.qemu_os
+  pool         = each.value.pool
+  desc         = each.value.desc
 
   memory  = each.value.memory
   numa    = each.value.numa

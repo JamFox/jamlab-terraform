@@ -49,6 +49,8 @@ variable "vms" {
     #ipconfig15          = optional(string, "")
     cicustom_volume     = optional(string, "local")
     hostname            = string
+    nameserver          = optional(string, "")
+    searchdomain        = optional(string, "")
     manage_etc_hosts    = optional(bool, true)
     fqdn                = string
     timezone            = optional(string, "Europe/London")
